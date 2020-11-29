@@ -2,6 +2,7 @@
 from dwave.system import EmbeddingComposite, DWaveSampler
 from dimod import BinaryQuadraticModel
 
+#Definire il problema
 # Define the problem as a Python dictionary and convert it to a BQM
 Q = {('B','B'): 1, 
     ('K','K'): 1, 

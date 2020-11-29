@@ -1,2 +1,2 @@
-Lavoro di programmazione per la tesi"# Tesi" 
+Lavoro di programmazione per la tesi
 # Tesi

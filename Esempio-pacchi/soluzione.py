@@ -1,17 +1,19 @@
 # Import the functions and packages that are used
 from dwave.system import EmbeddingComposite, DWaveSampler
-from dimod import BinaryQuadraticModel
+# Scelgo il gamma
+gamma = 21
 
-#Definire il problema
-# Define the problem as a Python dictionary and convert it to a BQM
-Q = {('B','B'): 1, 
-    ('K','K'): 1, 
-    ('A','C'): 2, 
-    ('A','K'): -2, 
-    ('B','C'): -2}
+# Definisco il problema, facendo una matrice dei coeff.
+# gamma = 21 non è sufficiente, metto gamma = 40
+Q = {('x1','x1'): 15-3*gamma, 
+    ('x2','x2'): 20-3*gamma, 
+    ('x3','x3'): 25-3*gamma, 
+    ('x1','x2'): 2*gamma, 
+    ('x1','x3'): 2*gamma,
+    ('x2','x3'): 2*gamma}
 
 # Convert the problem to a BQM
-bqm = BinaryQuadraticModel.from_qubo(Q)
+bqm = BinaryQuadraticModel.from_qubo(Q, offset=gamma*4.0)
 
 # Define the sampler that will be used to run the problem
 sampler = EmbeddingComposite(DWaveSampler())

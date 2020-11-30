@@ -1,7 +1,8 @@
 # Import the functions and packages that are used
 from dwave.system import EmbeddingComposite, DWaveSampler
+from dimod import BinaryQuadraticModel
 # Scelgo il gamma
-gamma = 21
+gamma = 40
 
 # Definisco il problema, facendo una matrice dei coeff.
 # gamma = 21 non è sufficiente, metto gamma = 40
@@ -19,5 +20,5 @@ bqm = BinaryQuadraticModel.from_qubo(Q, offset=gamma*4.0)
 sampler = EmbeddingComposite(DWaveSampler())
 
 # Run the problem on the sampler and print the results
-sampleset = sampler.sample(bqm, num_reads = 10)
+sampleset = sampler.sample(bqm, num_reads = 20)
 print(sampleset)

@@ -4,7 +4,7 @@ from dimod import BinaryQuadraticModel
 
 # Definisco il problema, facendo una matrice dei coeff.
 # Quelli doppi indicano i coefficienti singoli
-# Esempio: problema è   a+4b+2ac
+# ESEMPIO: problema è   a+4b+2ac
 #
 #  Q = {('a','a'):1,
 # ('b','b'): 4,
@@ -24,6 +24,7 @@ Q = {('B','B'): 1,
 # 0 1 1 0
 # Quindi mi aspetto che siano quelle scelte più frequentemente
 
+# Calcolo dalla mia matrice il problema in formato qubo
 # Convert the problem to a BQM
 bqm = BinaryQuadraticModel.from_qubo(Q)
 

@@ -35,22 +35,12 @@ sampler = EmbeddingComposite(DWaveSampler())
 # Create empty graph
 G = nx.Graph()
 
-# Add edges to graph - this also adds the nodes
-#G.add_edges_from([(1, 2), (1, 3), (2, 3), (3, 4), (3, 5), (4, 5), (4, 6), (5, 6), (6, 7)])
-
-#esempio
-#G.add_edges_from([(1, 2), (1, 3), (1, 8), (2, 3), (2,10),
-#(3, 4), (3, 5), (4, 5), (4, 6), (4,8), (4,9), (5, 6), (5,10), (6, 7), (6,9), (7,10)])
-
-#provo a generare un grafo casuale
-n = 50
-p = 0.3
-g = erdos_renyi_graph(n, p)
-
-G.add_edges_from(g.edges)
+#Mettiamo un grafo fisso in modo da controllare la bontà dei risultati
+grafo = open("grafo.txt", "rb")
+G = nx.read_adjlist(grafo)
 
 # Find the maximum independent set, S
-S = dnx.maximum_independent_set(G, sampler=sampler, num_reads=10)
+S = dnx.maximum_independent_set(G, sampler=sampler, num_reads=100)
 
 # Print the solution for the user
 print('Maximum independent set size found is', len(S))

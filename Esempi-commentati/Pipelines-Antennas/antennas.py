@@ -1,22 +1,11 @@
-# Copyright 2019 D-Wave Systems Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+
+#Importo questo pacchetto perche devo ricreare la funzione dnx.maximum_independent_set
+# a mano in modo da avere il sampleset e analizzarlo. La funziona da pacchetto infatti 
+# mi restituisce automaticamente il risultato migliore!
+from dwave_networkx.algorithms.independent_set import maximum_weighted_independent_set_qubo
 
 # Import networkx for graph tools
 import networkx as nx
-
-#per generare grafi casuali
-from networkx.generators.random_graphs import erdos_renyi_graph
 
 # Import dwave_networkx for d-wave graph tools/functions
 import dwave_networkx as dnx
@@ -26,11 +15,21 @@ import matplotlib
 matplotlib.use("agg")
 import matplotlib.pyplot as plt
 
+#importo l'analizzatore
+import dwave.inspector
+
 # Set the solver we're going to use
+# Uso un metodo quantistico, quindi il DwaweSampler che pero fa uso di 
+# librerie per l'embedding
+
 from dwave.system.samplers import DWaveSampler
+
+# Uso un embedder per mappare il mio problema per il mio sampler scelto
+
 from dwave.system.composites import EmbeddingComposite
 
-sampler = EmbeddingComposite(DWaveSampler())
+# Con questo comando preparo il sampler usando l'embedding scelto
+sampler = EmbeddingComposite(DWaveSampler(solver={'qpu': True}))
 
 # Create empty graph
 G = nx.Graph()
@@ -39,8 +38,32 @@ G = nx.Graph()
 grafo = open("grafo.txt", "rb")
 G = nx.read_adjlist(grafo)
 
+#Creo la QUBO usando una funzione di libreria
+Q = maximum_weighted_independent_set_qubo(G, weight = None, lagrange=2.0)
+
+#Calcolo il sampleset
+response = sampler.sample_qubo(Q, num_reads=200)
+
+# visuliazziamo che tipo di risultati ho avuto
+print(response)
+
+# we want the lowest energy sample
+sample = next(iter(response))
+
+# quale ho scelto
+print(sample)
+
+# nodes that are spin up or true are exactly the ones in S.
+# Creo la lista con i nodi del mio maximum indipendent set
+S = [node for node in sample if sample[node] > 0]
+
+# Uso l'inspector
+dwave.inspector.show(response)
 # Find the maximum independent set, S
-S = dnx.maximum_independent_set(G, sampler=sampler, num_reads=100)
+# Sto usando un funzione nota che crea automaticamente la QUBO e poi sampla
+# con il sampler da me scelto. Questa funzione mi da già il risultato migliore
+# e non tutto il sampleset!
+#   S = dnx.maximum_independent_set(G, sampler=sampler, num_reads=100)
 
 # Print the solution for the user
 print('Maximum independent set size found is', len(S))
@@ -49,6 +72,7 @@ print(S)
 # Visualize the results
 k = G.subgraph(S)
 notS = list(set(G.nodes()) - set(S))
+# Creo un sottografo con i nodi trovati dalla soluzione
 othersubgraph = G.subgraph(notS)
 pos = nx.spring_layout(G)
 plt.figure()

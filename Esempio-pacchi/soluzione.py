@@ -3,7 +3,9 @@ from dwave.system import EmbeddingComposite, DWaveSampler
 from dimod import BinaryQuadraticModel
 #Esempio da learn to formulate problem for dwawe system
 #pagina 17
-#
+
+#importo l'analizzatore
+import dwave.inspector
 
 # Scelgo il gamma in maniera tale che la soluzione x1 x2 sa la energia piu bassa
 gamma = 21
@@ -23,10 +25,12 @@ Q = {('x1','x1'): 15-3*gamma,
 bqm = BinaryQuadraticModel.from_qubo(Q, offset=gamma*4.0)
 
 # Define the sampler that will be used to run the problem
-sampler = EmbeddingComposite(DWaveSampler())
+sampler = EmbeddingComposite(DWaveSampler(solver={'qpu': True}))
 
 # Ho dovuto mettere 100 estrazioni perche ho energie vicine e quindi senno
 # cado nel buco sbagliato
 # Run the problem on the sampler and print the results
 sampleset = sampler.sample(bqm, num_reads = 100)
 print(sampleset)
+
+dwave.inspector.show(sampleset)

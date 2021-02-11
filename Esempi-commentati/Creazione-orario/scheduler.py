@@ -68,12 +68,13 @@ for i in range(num_shifts):
             dqm.set_quadratic_case(j, i, k, i, gamma*(dqm.get_quadratic_case(j, i, k, i) + 2))
 
 # Initialize the DQM solver
-sampler = LeapHybridDQMSampler()
+sampler = LeapHybridDQMSampler(solver={'qpu': True})
 
 # Solve the problem using the DQM solver
 sampleset = sampler.sample_dqm(dqm, label='Example - Employee Scheduling')
 
 # Get the first solution, and print it
+# Mi da la soluzione migliore, quella in cui sono caduto più volte e me la salvo
 sample = sampleset.first.sample
 energy = sampleset.first.energy
 print("\nSchedule score:", energy)

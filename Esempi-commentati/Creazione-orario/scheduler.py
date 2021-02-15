@@ -68,7 +68,7 @@ for i in range(num_shifts):
             dqm.set_quadratic_case(j, i, k, i, gamma*(dqm.get_quadratic_case(j, i, k, i) + 2))
 
 # Initialize the DQM solver
-sampler = LeapHybridDQMSampler(solver={'qpu': True})
+sampler = LeapHybridDQMSampler()
 
 # Solve the problem using the DQM solver
 sampleset = sampler.sample_dqm(dqm, label='Example - Employee Scheduling')

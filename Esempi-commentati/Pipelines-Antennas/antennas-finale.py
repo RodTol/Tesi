@@ -64,7 +64,7 @@ G = nx.read_adjlist(grafo)
 Q = maximum_weighted_independent_set_qubo(G, weight = None, lagrange=2.0)
 
 #Faccio l'annealing per 100 volte e creo dunque il mio sampleset
-response = sampler.sample_qubo(Q, num_reads=200)
+response = sampler.sample_qubo(Q, num_reads=200, label='Problema delle antenne')
 
 # Visuliazziamo che tipo di risultati ho avuto
 # print(response)

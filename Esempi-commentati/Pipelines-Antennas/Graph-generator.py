@@ -8,7 +8,7 @@ import networkx as nx
 # Importo il generatore di grafi
 from networkx.generators.random_graphs import erdos_renyi_graph
 # Genero un grafo con N nodi e una probabilità che creino collegamenti P
-n = 25
+n = 10
 p = 0.25
 g = erdos_renyi_graph(n, p)
 

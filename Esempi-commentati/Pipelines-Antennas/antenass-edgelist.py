@@ -50,16 +50,19 @@ from dwave.system.samplers import DWaveSampler
 from dwave.system.composites import EmbeddingComposite
 
 # Preparo il sampler usando l'embedding scelto
-sampler = EmbeddingComposite(DWaveSampler(solver={'qpu': True}))
+#sampler = EmbeddingComposite(DWaveSampler(solver={'qpu': True}))
+sampler = EmbeddingComposite(DWaveSampler(solver='Advantage_system1.1'))
+
 
 # Scelgo dei parametri per un embedding migliore
-chainstrenght= 750
+chainstrenght= 2000
 
 # Creo un grafo vuoto
 G = nx.Graph()
 
 # Prendo un grafo da un file creato con un altro codice
 # in modo da poter ripetere computazioni sullo stesso problema
+#grafo = open("/workspace/Tesi/Esempi-commentati/Pipelines-Antennas/MANN-a9.txt", "rb")
 grafo = open("JOHNSON8-2-4.txt", "rb")
 G = nx.read_edgelist(grafo)
 

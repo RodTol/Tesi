@@ -14,5 +14,7 @@ G = nx.read_edgelist(grafo)
 # Independent set
 maximal_iset = nx.maximal_independent_set(G)
 end = time.time()
+
 print(end - start,"s")
 print(maximal_iset)
+print("la dimensione del massimo set indioendente è:", len(maximal_iset))

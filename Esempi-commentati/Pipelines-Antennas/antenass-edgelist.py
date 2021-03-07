@@ -55,7 +55,7 @@ sampler = EmbeddingComposite(DWaveSampler(solver='Advantage_system1.1'))
 
 
 # Scelgo dei parametri per un embedding migliore
-chainstrenght= 2000
+chainstrenght= None
 
 # Creo un grafo vuoto
 G = nx.Graph()
@@ -70,7 +70,7 @@ G = nx.read_edgelist(grafo)
 Q = maximum_weighted_independent_set_qubo(G, weight = None, lagrange=2.0)
 
 #Faccio l'annealing per 100 volte e creo dunque il mio sampleset
-response = sampler.sample_qubo(Q, chain_strength=chainstrenght, num_reads=200, label='Problema delle antenne')
+response = sampler.sample_qubo(Q, chain_strength=chainstrenght, num_reads=50, label='Problema delle antenne')
 
 # Visuliazziamo che tipo di risultati ho avuto
 # print(response)

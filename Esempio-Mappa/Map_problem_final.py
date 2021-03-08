@@ -1,36 +1,45 @@
-#Autore: Rodolfo Tolloi
+# Autore: Rodolfo Tolloi
 
-#Con questo programma voglio creare un codice che colori
-#la mappa del Canada con 4 colori, assegnando colori diversi
-#a regioni adiacenti. Per fare ciò creerò una QUBO 
-#composta da due vincoli: il primo è quello di scegliere un
-#solo colore per regione, mentre il secondo è di avere
-#regioni confinanti con colori diversi. 
-#Verrano utilizzate diverse librerie:
+# L'obbiettivo di questo programma è quello di colorare
+# la mappa del Canada con 4 colori, assegnando colori diversi
+# a regioni adiacenti. Per fare ciò creerò una QUBO 
+# composta da due vincoli: il primo è quello di scegliere un
+# solo colore per regione, mentre il secondo è di avere
+# regioni confinanti con colori diversi. 
+# Verrano utilizzate diverse librerie:
 # -da dwawe.system verrano importati il sampler e il
 # composite per l'embedding
-# -da dimod 
+# -dwave.inspector
+# -pyqubo, per creare la formulazione matematica del problema
+# -pprint, per visualizzare meglio i dati
+# -networkx
+# -matplotlib
+
+# Importo il compiste per l'embedding e creo il sampler
 from dwave.system import EmbeddingComposite, DWaveSampler
-
-
 sampler = EmbeddingComposite(DWaveSampler(solver={'qpu': True}))
 
+# Analizzatore del d-wave
 import dwave.inspector
 
-from pyqubo import Array, UserDefinedExpress
-from pyqubo import Binary, WithPenalty
+# Importo da pyqubo le funzioni per creare i problemi
+from pyqubo import Array, Binary
+from pyqubo import  UserDefinedExpress
 
+# Importo pprint e fisso delle impostazioni adatte
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
+# Importo networkx per creare i grafi
 import networkx as nx
 
-# Importo la libreria per graficare i grafi
+# Importo matplotlib per graficare i grafi
 import matplotlib
 matplotlib.use("agg")
 import matplotlib.pyplot as plt
 
-# Set up provinces
+# Uso la funzione array di pyqubo per creare dei vettori
+# di 4 variabili binarie, le quali rappresentano i colori, per ogni provincia
 bc = Array.create('bc', shape=4, vartype='BINARY')   # British Columbia
 ab = Array.create('ab', shape=4, vartype='BINARY')   # Alberta
 sk = Array.create('sk', shape=4, vartype='BINARY')   # Saskatchewan
@@ -45,11 +54,11 @@ yt = Array.create('yt', shape=4, vartype='BINARY')   # Yukon
 nt = Array.create('nt', shape=4, vartype='BINARY')   # Northwest Territories
 nu = Array.create('nu', shape=4, vartype='BINARY')   # Nunavut  
 
-
+# Creo un vettore con all'interno tutte le provincie 
 provinces = [bc, ab, sk, mb, on, qc, nl, nb, pe, ns, yt, nt, nu]
 
 
-# Set up province neighbours (i.e. shares a border)
+# Creo un vettore con le coppie di provincie vicine
 neighbours = [(bc, ab),
               (bc, nt),
               (bc, yt),
@@ -65,54 +74,58 @@ neighbours = [(bc, ab),
               (nb, ns),
               (yt, nt),
               (nt, nu)]
-#creo la funzione di scelta di un colore solo
+
+# Creo una funzione che, dato un vettore di variabili, crea
+# l'equazione che rappresenta il vincolo di scelta di un solo colore
 class one_color(UserDefinedExpress):
  def __init__(self, a):
     express = (a[0]+a[1]+a[2]+a[3]-1)**2
     super().__init__(express)
-#creo l'espressione da mettere nell'hamiltoniana
+
+# Creo la prima parte dell'Hamiltoniana unendo i vincoli di tutte 
+# le 13 provincie
 H1=one_color(provinces[len(provinces)-1])
 for i in range(len(provinces)-1):
     H1=H1+one_color(provinces[i])
 
-#qubo=H1.compile().to_qubo()
-#pp.pprint(qubo)
-
-#creo la funzione per penalizzare colori ugali tra vicini
+# Creo la funzione che, data una coppia di vettori, crea la funzione
+# che penalizza il fatto che questi siano dello stesso colore
 class colori_diversi(UserDefinedExpress):
  def __init__(self, a, b):
     express = a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3]
     super().__init__(express)
-#creo l'espressione da mettere nell'Hamiltoniana
+
+# Creo la seconda parte dell'Hamiltoniana creando e unendo 
+# tutti i vincoli per le coppie di provincie vicine
 H2=colori_diversi(neighbours[len(neighbours)-1][0],neighbours[len(neighbours)-1][1])
 for i in range(len(neighbours)-1):
     H2=H2+colori_diversi(neighbours[i][0],neighbours[i][1])
 
-#qubo=H2.compile().to_qubo()
-#pp.pprint(qubo)
-
-#creo l'ham e la faccio diventare una BQM
+# Creo l'Hamiltoniana e la faccio diventare una BQM
 model = H1+H2
 bqm = model.compile().to_bqm()
 
 
-#la embeddo e calcolo col sampler
+# Creo il set dei risultati utilizzando il sampler definito prima
 chainstrenght= None
 sampleset = sampler.sample(bqm, num_reads = 10, chain_strength=chainstrenght, label="Problema della mappa")
+
 #risultati
 #print(sampleset)
 
-#uso l'inspector
+# Uso l'inspector
 dwave.inspector.show(sampleset)
 
+# Seleziono il risultato migliore, ossia quello a energia minore
 risultato = sampleset.first.sample
+
 #print(risultato)
 #print(risultato[0])
 
-
-#graficare la soluzione
+# Creo un grafo vuoto
 G = nx.Graph()
 
+# Creo un vettore con i nodi e uno con gli archi
 nodes=[ 'bc',
         'ab',
         'sk',
@@ -142,29 +155,34 @@ edges =     [('bc', 'ab'),
               ('nb','ns'),
               ('yt', 'nt'),
               ('nt', 'nu')]
+
+# Creo il grafo che rappresenta la mappa del Canada              
 G.add_nodes_from(nodes)
 G.add_edges_from(edges)
 
+# Creo un vettore i cui elementi sono il nome della provincia
+# e il colore assegnato, sotto forma di numero
 color_labels = [k for k, v in risultato.items() if v == 1]
 
+# Divido l'elemento del vettore in nome e colore
 for i in range(len(color_labels)):
         name = color_labels[i][:2]
         color = color_labels[i][3]
         G.nodes[name]["color"] = color
 
+# Creo un vettore di dimensioni 13 con ogni colore associato alla provincia,
+# sempre in forma di numero
 color_map = [color for name, color in G.nodes(data="color")]
 
-#print(color_map[4].replace('0','red'))
-
+# Sostituisco il numero che indica il colore con la stringa
+# intepretabile da networkx 
 for i in range(13):
-    #print(color_map[i])
     color_map[i]=color_map[i].replace('0','red')
     color_map[i]=color_map[i].replace('1','blue')
     color_map[i]=color_map[i].replace('2','green')
     color_map[i]=color_map[i].replace('3','violet')
-    #print(color_map[i])
-#print(color_map)
-
+    
+# Creo un vettore con le posizioni dei nodi nel grafico
 node_positions = {"bc": (0, 1),
                   "ab": (2, 1),
                   "sk": (4, 1),
@@ -179,10 +197,11 @@ node_positions = {"bc": (0, 1),
                   "nt": (2, 3),
                   "nu": (6, 3)}
 
+# Creo il grafico del grafo
 nx.draw_networkx(G, pos=node_positions, with_labels=True,
                    node_color=color_map, font_color="w", node_size=400)
 
-# Save graph
+# Salvo il grafo in un file
 filename = "/workspace/Tesi/Esempio-Mappa/mappa-colorata.png"
 plt.savefig(filename)
 print("The graph is saved in '{}'.".format(filename))
